@@ -53,26 +53,53 @@ public class EmployeeDatabase<T> {
         return "Field Not Found " + field;
     }
 
+    public Optional<Employee<T>> getByIdEmployee(String id) {
+        if (id == null) {
+            throw new EmployeeNotFoundException("Employee ID cannot be null");
+        }
+        if (id.trim().isEmpty()) {
+            throw new IllegalArgumentException("Employee ID cannot be empty");
+        }
+
+        try {
+            Employee<T> employee = database.get(id);
+            return Optional.ofNullable(employee);
+        } catch (EmployeeNotFoundException ex) {
+            System.err.println("Employee not found: " + ex.getMessage());
+            return Optional.empty();
+        } catch (Exception ex) {
+            System.err.println("Error retrieving employee: " + ex.getMessage());
+            return Optional.empty();
+        }
+    }
+
     public Collection<Employee<T>> getAllEmployee(){
         return database.values();
     }
 
-    public String sortByDepartment(String department){
-        return database.values().stream()
+    public List<String> sortByDepartment(String department){
+//        return database.values().stream()
+//                .filter(emp -> emp.getDepartment().equalsIgnoreCase(department))
+//                .map(Employee::toString)
+//                .collect(Collectors.joining());
+
+        return  getAllEmployee().stream()
                 .filter(emp -> emp.getDepartment().equalsIgnoreCase(department))
-                .map(Employee::toString)
-                .collect(Collectors.joining());
+                .map(emp -> emp.getEmployeeId() + " - " + emp.toString())
+                .toList();
+
     }
+
 
     public String getPerformanceRating(double rating){
         return  database.values().stream()
-                .filter(emp -> emp.performanceRating >= rating)
+                .filter(emp -> emp.getPerformanceRating() >= rating)
                 .map(Employee::toString).collect(Collectors.joining());
     }
 
     public  String getSalaryRange(double startingSalary, double endingSalary){
         return  database.values().stream()
-                .filter(emp -> emp.salary >= startingSalary && emp.salary <= endingSalary)
+                .filter(emp -> emp.getSalary() >= startingSalary && emp.getSalary() <= endingSalary)
                 .map(Employee::toString).collect(Collectors.joining());
     }
 

@@ -111,15 +111,34 @@ public class MainApp extends Application {
                 String id = UUID.randomUUID().toString();
                 String name = nameField.getText();
                 String dept = deptField.getText();
+
                 double salary = Double.parseDouble(salaryField.getText());
+
+                if (salary < 0) {
+                    throw new InvalidSalaryException("Invalid salary: Salary must be positive");
+                }
+
+                if (dept.isEmpty()){
+                    throw new InvalidDepartmentException("Invalid Department: You have to enter Department");
+                }
+
                 double rating = Double.parseDouble(ratingField.getText());
                 int years = Integer.parseInt(expField.getText());
 
                 db.addEmployee(new Employee<>(id, name, dept, salary, rating, years, true));
                 refreshList();
                 clearInputs(nameField, deptField, salaryField, ratingField, expField);
-            } catch (Exception ex) {
+            } catch (InvalidSalaryException ex) {
                 showAlert("Invalid Input", "Check fields and try again.");
+                System.out.println(ex.getMessage());
+
+            } catch (InvalidDepartmentException ex) {
+                System.out.println(ex.getMessage());
+                showAlert("Invalid Department", "Check fields and try again.");
+            }
+            catch (Exception ex) {
+                showAlert("Invalid Input", "Check fields and try again.");
+                System.out.println(ex.getMessage());
             }
         });
 
@@ -146,13 +165,22 @@ public class MainApp extends Application {
         });
 
         searchBtn.setOnAction(e -> {
-            String dept = searchField.getText();
-            employeeList.setAll(
-                    db.getAllEmployee().stream()
-                            .filter(emp -> emp.getDepartment().equalsIgnoreCase(dept))
-                            .map(emp -> emp.getEmployeeId() + " - " + emp.toString())
-                            .toList()
-            );
+            try{
+                String dept = searchField.getText();
+                if(dept.isEmpty()){
+                    throw new InvalidDepartmentException("Enter valid department");
+                }
+                employeeList.setAll(
+                        db.getAllEmployee().stream()
+                                .filter(emp -> emp.getDepartment().equalsIgnoreCase(dept))
+                                .map(emp -> emp.getEmployeeId() + " - " + emp.toString())
+                                .toList()
+                );
+            }catch(InvalidDepartmentException ex){
+                showAlert("Invalid Department", "Check fields and try again.");
+                System.out.println(ex.getMessage());
+            }
+
         });
 
         resetBtn.setOnAction(e -> refreshList());
@@ -168,6 +196,7 @@ public class MainApp extends Application {
                 );
             } catch (Exception ex) {
                 showAlert("Invalid Input", "Enter valid rating.");
+                System.out.println(ex.getMessage());
             }
         });
 
@@ -193,11 +222,15 @@ public class MainApp extends Application {
             try {
                 double rating = Double.parseDouble(raiseRatingField.getText());
                 double amount = Double.parseDouble(raiseAmountField.getText());
+                if(amount > 0){
+                    throw new InvalidSalaryException("Amount must be a positive number");
+                }
                 db.raiseSalary(rating, amount);
                 showAlert("Raise Complete", "Salaries updated.");
                 refreshList();
-            } catch (Exception ex) {
-                showAlert("Error", "Invalid rating or amount.");
+            } catch (InvalidSalaryException ex) {
+                showAlert("Amount Error", "Amount must be a positive number");
+                System.out.println(ex.getMessage());
             }
         });
 
@@ -228,7 +261,8 @@ public class MainApp extends Application {
                 case "yearsofexperience" -> Integer.parseInt(value);
                 default -> value;
             };
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
             return value;
         }
     }
