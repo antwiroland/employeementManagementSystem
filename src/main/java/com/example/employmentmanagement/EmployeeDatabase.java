@@ -78,10 +78,7 @@ public class EmployeeDatabase<T> {
     }
 
     public List<String> sortByDepartment(String department){
-//        return database.values().stream()
-//                .filter(emp -> emp.getDepartment().equalsIgnoreCase(department))
-//                .map(Employee::toString)
-//                .collect(Collectors.joining());
+
 
         return  getAllEmployee().stream()
                 .filter(emp -> emp.getDepartment().equalsIgnoreCase(department))
